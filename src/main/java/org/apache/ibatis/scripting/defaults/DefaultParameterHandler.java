@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.scripting.defaults;
 
@@ -38,59 +38,77 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  */
 public class DefaultParameterHandler implements ParameterHandler {
 
-  private final TypeHandlerRegistry typeHandlerRegistry;
+    /** 管理 MyBatis 中的全部 TypeHandler 对象*/
+    private final TypeHandlerRegistry typeHandlerRegistry;
 
-  private final MappedStatement mappedStatement;
-  private final Object parameterObject;
-  private final BoundSql boundSql;
-  private final Configuration configuration;
+    /** 记录 SQL 节点相应的配置信息*/
+    private final MappedStatement mappedStatement;
+    /** 用户传入的实参对象*/
+    private final Object parameterObject;
 
-  public DefaultParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
-    this.mappedStatement = mappedStatement;
-    this.configuration = mappedStatement.getConfiguration();
-    this.typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
-    this.parameterObject = parameterObject;
-    this.boundSql = boundSql;
-  }
+    /**
+     * 对应的 BoundSql 对象，需要设置参数的 PreparedStatement 对象，就是根据该 BoundSql 中记
+     * 录的 SQL 语句创建的，BoundSql 中也记录了对应参数的名称和相关属性
+     * */
+    private final BoundSql boundSql;
+    private final Configuration configuration;
 
-  @Override
-  public Object getParameterObject() {
-    return parameterObject;
-  }
-
-  @Override
-  public void setParameters(PreparedStatement ps) {
-    ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
-    List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
-    if (parameterMappings != null) {
-      for (int i = 0; i < parameterMappings.size(); i++) {
-        ParameterMapping parameterMapping = parameterMappings.get(i);
-        if (parameterMapping.getMode() != ParameterMode.OUT) {
-          Object value;
-          String propertyName = parameterMapping.getProperty();
-          if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
-            value = boundSql.getAdditionalParameter(propertyName);
-          } else if (parameterObject == null) {
-            value = null;
-          } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-            value = parameterObject;
-          } else {
-            MetaObject metaObject = configuration.newMetaObject(parameterObject);
-            value = metaObject.getValue(propertyName);
-          }
-          TypeHandler typeHandler = parameterMapping.getTypeHandler();
-          JdbcType jdbcType = parameterMapping.getJdbcType();
-          if (value == null && jdbcType == null) {
-            jdbcType = configuration.getJdbcTypeForNull();
-          }
-          try {
-            typeHandler.setParameter(ps, i + 1, value, jdbcType);
-          } catch (TypeException | SQLException e) {
-            throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);
-          }
-        }
-      }
+    public DefaultParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
+        this.mappedStatement = mappedStatement;
+        this.configuration = mappedStatement.getConfiguration();
+        this.typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
+        this.parameterObject = parameterObject;
+        this.boundSql = boundSql;
     }
-  }
+
+    @Override
+    public Object getParameterObject() {
+        return parameterObject;
+    }
+
+    /**
+     * 遍历 BoundSql.parameterMappings 集合中记录的 ParameterMapping 对象，并根据其中记录的参数名称查找相应
+     * 实参，然后与 SQL 语句绑定（这里会将 SQL 语句中的 "?" 替换为真正的参数）
+     * @param ps
+     */
+    @Override
+    public void setParameters(PreparedStatement ps) {
+        ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
+        // 取出 sql 中的参数映射列表
+        List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+        if (parameterMappings != null) {
+            for (int i = 0; i < parameterMappings.size(); i++) {
+                ParameterMapping parameterMapping = parameterMappings.get(i);
+                // 过滤掉存储过程中的输出参数
+                if (parameterMapping.getMode() != ParameterMode.OUT) {
+                    Object value; // 记录绑定的实参
+                    String propertyName = parameterMapping.getProperty();// 获取参数名称
+                    // 获取对应的实参值
+                    if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
+                        value = boundSql.getAdditionalParameter(propertyName);
+                    } else if (parameterObject == null) { // 整个实参为空
+                        value = null;
+                    } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
+                        value = parameterObject; //实参可以直接通过 TypeHandler 转换成 JdbcType
+                    } else {
+                        // 根据 propertyName 通过 MetaObject.getValue() 方法获取参数对象中相应的值 或 查找 Map 对象中值
+                        MetaObject metaObject = configuration.newMetaObject(parameterObject);
+                        value = metaObject.getValue(propertyName);
+                    }
+                    TypeHandler typeHandler = parameterMapping.getTypeHandler();
+                    JdbcType jdbcType = parameterMapping.getJdbcType();
+                    if (value == null && jdbcType == null) {
+                        jdbcType = configuration.getJdbcTypeForNull();
+                    }
+                    try {
+                        // 通过该方法会调用 PreparedStatement.setXXX() 方法为 SQL 语句绑定相应的实参
+                        typeHandler.setParameter(ps, i + 1, value, jdbcType);
+                    } catch (TypeException | SQLException e) {
+                        throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);
+                    }
+                }
+            }
+        }
+    }
 
 }

@@ -20,6 +20,7 @@ import java.sql.SQLException;
 
 /**
  * A parameter handler sets the parameters of the {@code PreparedStatement}.
+ * 为 SQL 语句绑定参数，也就是使用传入的实参替换 SQL 语句中的 "?" 占位符
  *
  * @author Clinton Begin
  */
@@ -27,6 +28,11 @@ public interface ParameterHandler {
 
   Object getParameterObject();
 
+  /**
+   * 主要负责调用 PreparedStatement.setXXX() 方法为 SQL 语句绑定实参
+   * @param ps
+   * @throws SQLException
+   */
   void setParameters(PreparedStatement ps)
       throws SQLException;
 

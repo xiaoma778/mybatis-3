@@ -26,6 +26,11 @@ import java.lang.reflect.WildcardType;
 import java.util.Arrays;
 
 /**
+ * @Desc 该类是一个工具类，提供了一系列静态方法来解析指定类中的字段、方法返回值或方法参数的类型
+ * 该类中通过 resolveFieldType()、resolveReturnType()、resolveParamTypes() 等方法
+ * 分别解析字段类型、方法返回值类型和方法参数列表中各个参数的类型。上述三个方法都会调用 resolveType()
+ * 方法，该方法会根据其第一个参数的类型，即字段、方法返回值或方法参数的类型，选择合适的方法进行解析。它
+ * 的第二个参数表示查找该字段、返回值或方法参数的起始位置。第三个参数则表示该字段、方法定义所在的类。
  * @author Iwao AVE!
  */
 public class TypeParameterResolver {
@@ -64,6 +69,13 @@ public class TypeParameterResolver {
     return result;
   }
 
+  /**
+   *
+   * @param type 字段、方法返回值或方法参数的类型
+   * @param srcType 查找该字段、返回值或方法参数的起始位置
+   * @param declaringClass 表示该字段、方法定义所在的类
+   * @return
+   */
   private static Type resolveType(Type type, Type srcType, Class<?> declaringClass) {
     if (type instanceof TypeVariable) {
       return resolveTypeVar((TypeVariable<?>) type, srcType, declaringClass);

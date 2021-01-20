@@ -32,6 +32,7 @@ import java.lang.annotation.Target;
  *   // ...
  * }
  * </pre>
+ * 该注解用于指明被注解的 TypeHandler 实现类能够处理的 JDBC 类型集合
  * @author Eduardo Macarron
  */
 @Documented

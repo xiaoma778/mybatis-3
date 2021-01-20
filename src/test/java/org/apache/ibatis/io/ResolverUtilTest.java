@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.CacheNamespace;
@@ -50,6 +52,25 @@ class ResolverUtilTest {
     assertEquals(new ResolverUtil<>().getClassLoader(), currentContextClassLoader);
   }
 
+  /**
+   * mybatis 技术内幕 Page-99
+   */
+  @Test
+  void maqiTest() {
+    ResolverUtil<VFS> resolverUtil = new ResolverUtil<>();
+    //在 org.apache.ibatis.io 包下查找实现了 VFS 这个类，该方法实现依赖 resolverUtil.find() 方法
+    resolverUtil.findImplementations(VFS.class, "org.apache.ibatis.io");
+
+    //在 org.apache.ibatis.io 包下查找符合 new ResolverUtil.IsA(DefaultVFS.class) 条件的类
+    resolverUtil.find(new ResolverUtil.IsA(DefaultVFS.class), "org.apache.ibatis.io");
+
+    //获取上面两次查找的结果
+    Collection<Class<? extends VFS>> beans = resolverUtil.getClasses();
+    Iterator<Class<? extends VFS>> iterator = beans.iterator();
+    while (iterator.hasNext())
+      System.out.println(iterator.next());
+  }
+
   @Test
   void setClassLoader() {
     ResolverUtil resolverUtil = new ResolverUtil();
@@ -71,6 +92,7 @@ class ResolverUtilTest {
   @Test
   void findImplementations() {
     ResolverUtil<VFS> resolverUtil = new ResolverUtil<>();
+    //在 org.apache.ibatis.io 包下查找实现了 VFS 这个类
     resolverUtil.findImplementations(VFS.class, "org.apache.ibatis.io");
     Set<Class<? extends VFS>> classSets = resolverUtil.getClasses();
     //org.apache.ibatis.io.VFS
@@ -100,7 +122,9 @@ class ResolverUtilTest {
   @Test
   void find() {
     ResolverUtil<VFS> resolverUtil = new ResolverUtil<>();
+    //在 org.apache.ibatis.io 包下查找符合 new ResolverUtil.IsA(VFS.class) 条件的类
     resolverUtil.find(new ResolverUtil.IsA(VFS.class), "org.apache.ibatis.io");
+    //获取上面查找的结果
     Set<Class<? extends VFS>> classSets = resolverUtil.getClasses();
     //org.apache.ibatis.io.VFS
     //org.apache.ibatis.io.DefaultVFS

@@ -18,6 +18,7 @@ package org.apache.ibatis.domain.blog.mappers;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.domain.blog.Blog;
 import org.apache.ibatis.session.RowBounds;
 
 public interface BlogMapper {
@@ -28,4 +29,7 @@ public interface BlogMapper {
 
   List<Map> selectAllPosts(RowBounds rowBounds, Object param);
 
+  int insert(Blog blog);
+
+  List<Blog> listBlogByIds(List<Integer> ids);
 }

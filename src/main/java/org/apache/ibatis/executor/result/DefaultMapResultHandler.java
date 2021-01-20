@@ -25,6 +25,7 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 
 /**
+ * 该类使用了 mappedResults（Map<K, V>类型） 字段来暂存映射得到的结果对象
  * @author Clinton Begin
  */
 public class DefaultMapResultHandler<K, V> implements ResultHandler<V> {

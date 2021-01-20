@@ -57,15 +57,18 @@
 
     <resultMap id="selectComplexImmutableAuthor" type="org.apache.ibatis.domain.blog.ComplexImmutableAuthor">
         <constructor>
-            <idArg javaType="org.apache.ibatis.domain.blog.ComplexImmutableAuthorId"
-                resultMap="complexAuthorId" />
+            <idArg javaType="org.apache.ibatis.domain.blog.ComplexImmutableAuthorId" resultMap="complexAuthorId" />
             <arg column="bio" javaType="string" />
             <arg column="favourite_section" javaType="org.apache.ibatis.domain.blog.Section" />
         </constructor>
     </resultMap>
 
+    <sql id="columns">
+        username, password, email, bio, favourite_section as favouriteSection
+    </sql>
+
     <select id="selectAllAuthors" resultType="org.apache.ibatis.domain.blog.Author">
-        select * from author
+        select <include refid="columns" /> from author
     </select>
 
     <select id="selectAllAuthorsSet" resultType="org.apache.ibatis.domain.blog.Author">
@@ -97,20 +100,18 @@
         from author where id = ?
     </select>
 
-    <select id="selectImmutableAuthor" parameterMap="selectAuthor"
-        resultMap="selectImmutableAuthor">
+    <select id="selectImmutableAuthor" parameterMap="selectAuthor" resultMap="selectImmutableAuthor">
         select id, username, password, email, bio, favourite_section
         from author where id = ?
     </select>
 
-    <select id="selectAuthorWithInlineParams" parameterType="int"
-        resultType="org.apache.ibatis.domain.blog.Author">
+    <select id="selectAuthorWithInlineParams" parameterType="int" resultType="org.apache.ibatis.domain.blog.Author">
         select * from author where id = #{id}
     </select>
 
     <insert id="insertAuthor" parameterType="org.apache.ibatis.domain.blog.Author">
         insert into Author (id,username,password,email,bio)
-        values (#{id},#{username},#{password},#{email},#{bio})
+        values (${id},#{username},#{password},#{email},#{bio})
     </insert>
 
     <update id="updateAuthor" parameterType="org.apache.ibatis.domain.blog.Author">
@@ -126,7 +127,6 @@
     <delete id="deleteAuthor" parameterType="int">
         delete from Author where id = #{id}
     </delete>
-
 
     <update id="updateAuthorIfNecessary" parameterType="org.apache.ibatis.domain.blog.Author">
         update Author

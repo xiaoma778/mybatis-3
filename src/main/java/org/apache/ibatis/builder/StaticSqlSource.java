@@ -23,11 +23,17 @@ import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 它与 DynamicSqlSource 区别是：
+ * StaticSqlSource 中记录的 SQL 语句中可能含有 "?" 占位符，但是可以直接提交给数据库执行
+ * DynamicSqlSource 中封装的 SQL 语句还需要进行一系列解析，才会最终形成数据库可执行的 SQL 语句
  * @author Clinton Begin
  */
 public class StaticSqlSource implements SqlSource {
 
   private final String sql;
+  /**
+   * 记录了sql 语句中 "#{}" 占位符中的参数属性列表
+   */
   private final List<ParameterMapping> parameterMappings;
   private final Configuration configuration;
 

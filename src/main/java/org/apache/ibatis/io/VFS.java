@@ -177,6 +177,7 @@ public abstract class VFS {
   /**
    * Recursively list the full resource path of all the resources that are children of the
    * resource identified by a URL.
+   * 查找指定的资源名称列表
    *
    * @param url The URL that identifies the resource to list.
    * @param forPath The path to the resource that is identified by the URL. Generally, this is the

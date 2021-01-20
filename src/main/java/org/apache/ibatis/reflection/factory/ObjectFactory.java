@@ -20,7 +20,7 @@ import java.util.Properties;
 
 /**
  * MyBatis uses an ObjectFactory to create all needed new Objects.
- *
+ * 该接口提供了多个 create() 方法的重载，通过这些 create() 方法可以创建指定类型的对象
  * @author Clinton Begin
  */
 public interface ObjectFactory {
@@ -52,6 +52,7 @@ public interface ObjectFactory {
   /**
    * Returns true if this object can have a set of other objects.
    * It's main purpose is to support non-java.util.Collection objects like Scala collections.
+   * 检测指定类型是否为集合类型，主要处理 java.util.Collection 及其子类
    *
    * @param type Object type
    * @return whether it is a collection or not

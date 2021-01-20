@@ -49,16 +49,29 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 用来管理众多的 TypeHandler 接口实现，知道何时使用哪个 TypeHandler 接口实现完成转换
+ * 在 MyBatis 初始化过程中，会为所有已知的的 TypeHandler 创建对象，并实现注册到 TypeHandlerRegistry
+ * 中，由 TypeHandlerRegistry 负责管理这些 TypeHandler 对象
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
 public final class TypeHandlerRegistry {
 
+  //记录 JdbcType 与 TypeHandler 之间的对应关系，其中 JdbcType 是一个枚举类型，它定义对应的 JDBC 类型
+  //该集合主要用于从结果集读取数据时，将数据从 Jdbc 类型转换成 Java 类型
   private final Map<JdbcType, TypeHandler<?>>  jdbcTypeHandlerMap = new EnumMap<>(JdbcType.class);
+
+  //记录了 Java 类型向指定 JdbcType 转换时，需要使用的 TypeHandler 对象。例如：Java 类型中的 String 可能
+  //转换成数据库的 char、varchar 等多种类型，所以存在一对多关系
   private final Map<Type, Map<JdbcType, TypeHandler<?>>> typeHandlerMap = new ConcurrentHashMap<>();
+
+  // 处理Object类型（运行时，会尝试进行向下类型转换找到合适的TypeHandler，如果依然失败，最后选择ObjectTypeHandler）
   private final TypeHandler<Object> unknownTypeHandler;
+
+  //记录了全部 [TypeHandler 的类型] 以及该类型相应的 [TypeHandler 对象] 注：这里记录的是 类型->对象 的关系
   private final Map<Class<?>, TypeHandler<?>> allTypeHandlersMap = new HashMap<>();
 
+  //空 TypeHandler 集合的标识
   private static final Map<JdbcType, TypeHandler<?>> NULL_TYPE_HANDLER_MAP = Collections.emptyMap();
 
   private Class<? extends TypeHandler> defaultEnumTypeHandler = EnumTypeHandler.class;
@@ -108,7 +121,9 @@ public final class TypeHandlerRegistry {
     register(JdbcType.DOUBLE, new DoubleTypeHandler());
 
     register(Reader.class, new ClobReaderTypeHandler());
+    //表示 StringTypeHandler 可以将 String 类型转换成 null(JdbcType)
     register(String.class, new StringTypeHandler());
+    //表示 StringTypeHandler 可以将 String 类型转换成 CHAR(JdbcType)，后面类推
     register(String.class, JdbcType.CHAR, new StringTypeHandler());
     register(String.class, JdbcType.CLOB, new ClobTypeHandler());
     register(String.class, JdbcType.VARCHAR, new StringTypeHandler());
@@ -342,6 +357,8 @@ public final class TypeHandlerRegistry {
       }
     }
     // @since 3.1.0 - try to auto-discover the mapped type
+    //从 3.1.0 版本开始，可以根据 TypeHandler 类型自动查找对应的 Java 类型，这需要我们的 TypeHandler
+    //实现类同时继承 TypeReference 这个抽象类
     if (!mappedTypeFound && typeHandler instanceof TypeReference) {
       try {
         TypeReference<T> typeReference = (TypeReference<T>) typeHandler;

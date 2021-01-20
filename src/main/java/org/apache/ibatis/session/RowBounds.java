@@ -16,6 +16,7 @@
 package org.apache.ibatis.session;
 
 /**
+ * 记录了用户设置的 offset 和 limit，用于在结果集中定位映射的起始位置和结束位置
  * @author Clinton Begin
  */
 public class RowBounds {

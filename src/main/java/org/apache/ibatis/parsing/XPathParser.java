@@ -41,16 +41,17 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
+ * @Desc 封装了 XPath、Document 和 EntityResolver 的功能
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
 public class XPathParser {
 
-  private final Document document;
-  private boolean validation;
-  private EntityResolver entityResolver;
-  private Properties variables;
-  private XPath xpath;
+  private final Document document;//Document 对象
+  private boolean validation;//是否开启验证
+  private EntityResolver entityResolver;//用于加载本地 DTD 文件
+  private Properties variables;//mybatis-config.xml 中 <properties> 标签定义的键值对集合
+  private XPath xpath;//XPath 对象
 
   public XPathParser(String xml) {
     commonConstructor(false, null, null);

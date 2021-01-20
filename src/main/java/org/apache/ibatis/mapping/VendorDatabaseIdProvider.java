@@ -1,17 +1,17 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.ibatis.mapping;
 
@@ -39,50 +39,52 @@ import org.apache.ibatis.logging.LogFactory;
  */
 public class VendorDatabaseIdProvider implements DatabaseIdProvider {
 
-  private Properties properties;
+    private Properties properties;
 
-  @Override
-  public String getDatabaseId(DataSource dataSource) {
-    if (dataSource == null) {
-      throw new NullPointerException("dataSource cannot be null");
-    }
-    try {
-      return getDatabaseName(dataSource);
-    } catch (Exception e) {
-      LogHolder.log.error("Could not get a databaseId from dataSource", e);
-    }
-    return null;
-  }
-
-  @Override
-  public void setProperties(Properties p) {
-    this.properties = p;
-  }
-
-  private String getDatabaseName(DataSource dataSource) throws SQLException {
-    String productName = getDatabaseProductName(dataSource);
-    if (this.properties != null) {
-      for (Map.Entry<Object, Object> property : properties.entrySet()) {
-        if (productName.contains((String) property.getKey())) {
-          return (String) property.getValue();
+    @Override
+    public String getDatabaseId(DataSource dataSource) {
+        if (dataSource == null) {
+            throw new NullPointerException("dataSource cannot be null");
         }
-      }
-      // no match, return null
-      return null;
-    }
-    return productName;
-  }
-
-  private String getDatabaseProductName(DataSource dataSource) throws SQLException {
-    try (Connection con = dataSource.getConnection()) {
-      DatabaseMetaData metaData = con.getMetaData();
-      return metaData.getDatabaseProductName();
+        try {
+            return getDatabaseName(dataSource);
+        } catch (Exception e) {
+            LogHolder.log.error("Could not get a databaseId from dataSource", e);
+        }
+        return null;
     }
 
-  }
+    @Override
+    public void setProperties(Properties p) {
+        this.properties = p;
+    }
 
-  private static class LogHolder {
-    private static final Log log = LogFactory.getLog(VendorDatabaseIdProvider.class);
-  }
+    private String getDatabaseName(DataSource dataSource) throws SQLException {
+        String productName = getDatabaseProductName(dataSource);
+        if (this.properties != null) {
+            //根据 <databaseIdProvider> 子节点配置的数据库产品和 databaseId 之间对应关系，确定最终使用的
+            //databaseId
+            for (Map.Entry<Object, Object> property : properties.entrySet()) {
+                if (productName.contains((String)property.getKey())) {
+                    return (String)property.getValue();
+                }
+            }
+            // no match, return null
+            return null;
+        }
+        return productName;
+    }
+
+    private String getDatabaseProductName(DataSource dataSource) throws SQLException {
+        try (Connection con = dataSource.getConnection()) {
+            DatabaseMetaData metaData = con.getMetaData();
+            return metaData.getDatabaseProductName();
+        }
+
+    }
+
+    private static class LogHolder {
+        private static final Log log = LogFactory.getLog(VendorDatabaseIdProvider.class);
+    }
 
 }

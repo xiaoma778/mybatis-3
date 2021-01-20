@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.apache.ibatis.reflection.ReflectionException;
 
 /**
+ * 工具类，提供静态方法帮助完成方法名到属性名的转换，以及多种检测操作
  * @author Clinton Begin
  */
 public final class PropertyNamer {
@@ -28,6 +29,11 @@ public final class PropertyNamer {
     // Prevent Instantiation of Static Class
   }
 
+  /**
+   * 将方法名转换成属性名，具体逻辑是将方法名开头的 "is"、"get" 或 "set" 截掉，并将首字母小写
+   * @param name
+   * @return
+   */
   public static String methodToProperty(String name) {
     if (name.startsWith("is")) {
       name = name.substring(2);
@@ -44,14 +50,31 @@ public final class PropertyNamer {
     return name;
   }
 
+  /**
+   * 检测方法名是否对应属性名，具体逻辑是：方法名是否以 "is"、"get" 或 "set" 开头
+   * @param name
+   * @return
+   */
   public static boolean isProperty(String name) {
     return isGetter(name) || isSetter(name);
   }
 
+  /**
+   * getter 方法的定义：
+   *    1.方法名以 get 打头，且方法名长度超过 3 个字符
+   *    2.方法名以 is 打头，且方法名长度超过 2 个字符
+   * @param name
+   * @return
+   */
   public static boolean isGetter(String name) {
     return (name.startsWith("get") && name.length() > 3) || (name.startsWith("is") && name.length() > 2);
   }
 
+  /**
+   * 检测方法是否为 setter 方法
+   * @param name
+   * @return
+   */
   public static boolean isSetter(String name) {
     return name.startsWith("set") && name.length() > 3;
   }

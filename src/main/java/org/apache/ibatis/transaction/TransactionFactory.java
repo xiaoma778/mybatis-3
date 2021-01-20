@@ -31,6 +31,7 @@ public interface TransactionFactory {
 
   /**
    * Sets transaction factory custom properties.
+   * 配置 TransactionFactory 对象，一般紧跟在创建完成之后，完成对 TransactionFactory 的自定义配置
    * @param props
    */
   default void setProperties(Properties props) {
@@ -39,6 +40,7 @@ public interface TransactionFactory {
 
   /**
    * Creates a {@link Transaction} out of an existing connection.
+   * 在指定的连接上创建 Transaction 对象
    * @param conn Existing database connection
    * @return Transaction
    * @since 3.1.0
@@ -47,6 +49,7 @@ public interface TransactionFactory {
 
   /**
    * Creates a {@link Transaction} out of a datasource.
+   * 从指定数据源中获取数据库连接，并在此连接之上创建 Transaction 对象
    * @param dataSource DataSource to take the connection from
    * @param level Desired isolation level
    * @param autoCommit Desired autocommit

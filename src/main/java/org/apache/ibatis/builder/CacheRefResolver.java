@@ -18,6 +18,7 @@ package org.apache.ibatis.builder;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 一个简单的 Cache 引用解析器
  * @author Clinton Begin
  */
 public class CacheRefResolver {

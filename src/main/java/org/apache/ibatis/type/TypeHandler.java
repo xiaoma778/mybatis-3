@@ -21,13 +21,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * 类型转换器，将 JDBC 数据类型与 JAVA 语言中的数据类型进行相互转换
+ * 一般情况下，TypeHandler 用于完成单个参数以及单个列值的类型转换，如果存在多列值转换成一个 Java
+ * 对象的需求，应该优先考虑使用在映射文件中定义合适的映射规则（<resultMap>节点）完成映射
  * @author Clinton Begin
  */
 public interface TypeHandler<T> {
 
+  /**
+   * 在通过 PreparedStatement 为 SQL 语句绑定参数时，会将数据由 JdbcType 类型转换成 Java 类型
+   * @param ps
+   * @param i
+   * @param parameter
+   * @param jdbcType
+   * @throws SQLException
+   */
   void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
 
   /**
+   * 从 ResultSet 中获取数据时会调用此方法，会将数据由 Java 类型转换成 JdbcType 类型
    * @param columnName Colunm name, when configuration <code>useColumnLabel</code> is <code>false</code>
    */
   T getResult(ResultSet rs, String columnName) throws SQLException;

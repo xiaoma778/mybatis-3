@@ -27,6 +27,8 @@ import java.util.Properties;
 
 /**
  * A class to simplify access to resources through the classloader.
+ * 该类是一个提供了多个静态方法的工具类，其中封装了一个 ClassLoaderWrapper 类型的静态字段，
+ * Resources 提供的这些静态工具都是通过调用该 ClassLoaderWrapper 对象的相应方法实现的
  *
  * @author Clinton Begin
  */
